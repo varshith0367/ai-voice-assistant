@@ -34,12 +34,30 @@ class VoiceAssistant:
 
     def _register_default_commands(self):
         """Register built-in commands. Add more with self.register()."""
+        self.tasks = []
         self.register(["time", "what time"], self.tell_time)
         self.register(["date", "today's date"], self.tell_date)
         self.register(["open google"], lambda q: self._open_site("https://google.com"))
         self.register(["open youtube"], lambda q: self._open_site("https://youtube.com"))
+        self.register(["add task", "remind me to"], self.add_task)
+        self.register(["my tasks", "show tasks", "what are my tasks"], self.list_tasks)
         self.register(["hello", "hi"], lambda q: "Hello! How can I help you?")
         self.register(["exit", "quit", "stop", "bye"], lambda q: "__EXIT__")
+
+    def add_task(self, query: str) -> str:
+        for trigger in ["add task", "remind me to"]:
+            if trigger in query.lower():
+                task = query.lower().split(trigger, 1)[1].strip()
+                if task:
+                    self.tasks.append(task)
+                    return f"Added task: '{task}'. You now have {len(self.tasks)} task(s)."
+        return "Please tell me what task to add, e.g. 'remind me to submit assignment'."
+
+    def list_tasks(self, query: str) -> str:
+        if not self.tasks:
+            return "You have no tasks saved yet."
+        listing = "; ".join(f"{i+1}. {t}" for i, t in enumerate(self.tasks))
+        return f"Your tasks: {listing}"
 
     def register(self, keywords, handler):
         """Register a new command. keywords: list of trigger phrases."""
